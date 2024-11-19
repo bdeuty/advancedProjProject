@@ -6,9 +6,11 @@ import java.util.*;
 public class ReadsTable {
 	static class DataObject {
 		List<String> columnNames;
+		String subjectID;
 		
-		public DataObject() {
+		public DataObject(String subjectID) {
 			this.columnNames = new ArrayList<>();
+			this.subjectID = subjectID;
 		}
 		
 		public void addColumnName(String columnName) {
@@ -17,9 +19,32 @@ public class ReadsTable {
 		
 		@Override
 		public String toString() {
-			return "DataObject{columnNames=" + columnNames + "}";
+			return subjectID + "\nDataObject{columnNames=" + columnNames + "}";
+		}
+		
+		public String getSubjectID()
+		{
+			return subjectID;
+		}
+		public List<String> getLowestCounts()
+		{
+			return columnNames;
 		}
 	}
+	
+	static class ValueWithIndex
+	{
+		int value;
+		int index;
+		
+		public ValueWithIndex(int value, int index)
+		{
+			this.value = value;
+			this.index = index;
+		}
+	}
+	
+	static String[] headers;
 	
 	public static void main(String[] args)
 	{
@@ -28,6 +53,12 @@ public class ReadsTable {
 		{
 			BufferedReader reader = new BufferedReader(new FileReader(fileName));
 			String line;
+			//read the headers
+			if ((line = reader.readLine()) != null && (line = line.trim()).length() > 0)
+			{
+				headers = line.split(",");
+			}
+			//process row data
 			while ((line = reader.readLine()) != null) {
 				DataObject dataObject = parseRow(line);
 				
@@ -48,13 +79,14 @@ public class ReadsTable {
 			System.out.println("Skipping row due to insufficient columns.");
 			return null;
 		}
-		String[] headers = columns[0].split(",");
-//		for (String head : headers)
-//		{
-//			System.out.println(head);
-//		}
-		List<Double> values = new ArrayList<>();
 		
+		String subjectID = columns[0].trim();
+		subjectID = subjectID.substring(1, subjectID.length()-1);
+		List<ValueWithIndex> valueWithIndexes = new ArrayList<>();
+		
+//		String header = columns[0];
+//		List<Integer> values = new ArrayList<>();
+//		
 		for (int i = 1; i < columns.length; i++)
 		{
 			try
@@ -63,10 +95,10 @@ public class ReadsTable {
 				valueStr = valueStr.replaceAll("[^0-9.-]", "");
 				if (!valueStr.isEmpty())
 				{
-					double value = Double.parseDouble(columns[i].trim());
+					int value = Integer.parseInt(valueStr);
 					if (value > 0)
 					{
-						values.add(value);
+						valueWithIndexes.add(new ValueWithIndex(value, i));
 					}
 				}
 				
@@ -75,33 +107,21 @@ public class ReadsTable {
 			}
 		}
 		
-		if (values.size() < 5) {
+		if (valueWithIndexes.size() < 5) {
 			System.out.println("Not enough valid data to process");
 			return null;
 		}
 		
-		Collections.sort(values);
-		List<Double> smallestValues = values.subList(0,5);
+		Collections.sort(valueWithIndexes, Comparator.comparingInt(v -> v.value));
+		List<ValueWithIndex> smallestValues = valueWithIndexes.subList(0,5);
+
 		
-		DataObject dataObject = new DataObject();
+		DataObject dataObject = new DataObject(subjectID);
 		
-		for (Double value : smallestValues)
+		for (ValueWithIndex valueWithIndex : smallestValues)
 		{
-			for (int i = 0; i < columns.length; i++)
-			{
-				try {
-					double parsedValue = Double.parseDouble(columns[i].trim());
-					if (parsedValue == value)
-					{
-						if (i < headers.length) {
-							dataObject.addColumnName(headers[i]);
-						}
-					}
-				} catch (NumberFormatException e)
-				{
-					System.out.println("idk bro");
-				}
-			}
+			String header = headers[valueWithIndex.index];
+			dataObject.addColumnName(header.substring(1,header.length()-1));
 		}
 		
 		return dataObject;
