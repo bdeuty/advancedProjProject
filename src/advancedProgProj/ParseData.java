@@ -190,17 +190,17 @@ public class ParseData
 		return combinedData;
 	}
 	
-	public static void writeToCSV(String[][] data, String outputFilePath) throws IOException 
+	public static void writeToTSV(String[][] data, String outputFilePath) throws IOException 
 	{
 		BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath));
 		
 		//header
-		writer.write("sampleID,vitalStatus,bactNames\n");
+		writer.write("sampleID\tvitalStatus\tbactNames\n");
 		
 		//write rows
 		for (String[] row : data)
 		{
-			writer.write(String.join(",", row) + "\n");
+			writer.write(String.join("\t", row) + "\n");
 		}
 		writer.close();
 	}
@@ -246,7 +246,7 @@ public class ParseData
 		
 		try
 		{
-			writeToCSV(combined, outputFilePath);
+			writeToTSV(combined, outputFilePath);
 			System.out.println("Data successfully written to " + outputFilePath);
 		} catch (IOException e)
 		{
