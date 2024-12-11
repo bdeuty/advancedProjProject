@@ -3,7 +3,7 @@ library(caret)
 library(randomForest)
 
 ##read the table
-file_name <- "parsedPatientData.csv"
+file_name <- "C:\\Users\\Bryce\\Documents\\Classes\\Advanced Programming\\parsedPatientData.csv"
 data <- read.table(file_name,header=TRUE,sep="\t")
 
 #data preprossesing
